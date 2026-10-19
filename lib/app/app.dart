@@ -26,6 +26,8 @@ class _MiniTrelloAppState extends State<MiniTrelloApp> {
     title: 'Mini Trello',
     debugShowCheckedModeBanner: false,
     theme: buildTheme(),
+    darkTheme: buildTheme(Brightness.dark),
+    themeMode: ThemeMode.system,
     routerConfig: _router,
   );
 }
