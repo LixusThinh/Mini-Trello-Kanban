@@ -1,6 +1,6 @@
 # Mini Trello / Kanban — Flutter + Supabase
 
-Bài tập: dùng đủ 3 mảng của Supabase — **Database** (profiles/projects/tasks + RLS + Realtime), **Authentication** (email/password), **Storage** (ảnh đính kèm task). Clone đúng UI/flow trong ảnh demo của thầy, làm chắc phần bảo mật hơn bản demo.
+Bài tập: dùng đủ 3 mảng của Supabase — **Database** (profiles/projects/tasks + RLS + Realtime), **Authentication** (email/password), **Storage** (ảnh đính kèm task). Giữ đủ **chức năng/flow** của bản demo của thầy nhưng **giao diện tự thiết kế, khác hoàn toàn** (bộ nhận diện "Indigo Focus", contract-v2), và làm chắc phần bảo mật hơn bản demo.
 
 Hai agent chạy song song:
 
@@ -140,7 +140,7 @@ abstract class TaskRepository {
 
 `lib/app/router.dart`: `/login`, `/register`, `/projects`, `/projects/:id` (extra = `Project`). `redirect`: chưa login → `/login`; đã login mà đứng ở auth route → `/projects`. `refreshListenable` bám `authRepo.watchUser()`.
 
-`lib/app/theme.dart`: Material 3, `ColorScheme.fromSeed(seedColor: Color(0xFF2E6B4F))`, nền `Color(0xFFF1F7F1)`, nút chính bo tròn full (StadiumBorder) màu xanh đậm, FAB extended màu mint `Color(0xFFA8EBCB)`, input `OutlineInputBorder` bo 8.
+`lib/app/theme.dart` (**contract-v2, "Indigo Focus"**): Material 3, seed indigo `0xFF4F46E5` + accent violet `0xFF7C3AED` (`AppColors.heroGradient`), nền sáng `0xFFF6F5FB` / tối `0xFF0F0E17`, có **dark mode** (`themeMode: system`). Nút bo góc 14 cao 52 (không stadium), input **filled không viền** bo 14, card bo 20 viền mảnh không đổ bóng, bottom sheet bo 28 có drag handle, SnackBar floating. Màu trạng thái `statusColor()`: Cần làm slate `0xFF64748B`, Đang làm pink `0xFFEC4899`, Hoàn thành teal `0xFF14B8A6`; icon `statusIcon()`. Bảng gradient thẻ dự án `AppColors.projectPalette`.
 
 ---
 
@@ -164,16 +164,28 @@ abstract class TaskRepository {
 
 ### Nhánh B — Codex (`feat/ui`), chạy bằng `flutter run --dart-define=USE_FAKE=true`
 - [ ] `Fake*Repository` in-memory dùng `StreamController.broadcast`, seed 1 user + 1 project + 3 task, delay 300ms giả mạng
-- [ ] **LoginScreen**: icon lưới 2x2 có dấu "+", tiêu đề "Mini Trello / Kanban", phụ đề "Đăng nhập để quản lý dự án & công việc", field Email (icon thư), Mật khẩu (icon khoá, nút ẩn/hiện), nút "Đăng nhập", dòng "Chưa có tài khoản? **Đăng ký ngay**"
-- [ ] **RegisterScreen**: "Tạo tài khoản mới" / "Điền thông tin bên dưới để bắt đầu", Họ và tên, Email, Mật khẩu, nút "Tạo tài khoản"; validate email hợp lệ, mật khẩu ≥ 6
-- [ ] **ProjectsScreen**: AppBar "Dự án của tôi" + dòng nhỏ full_name, nút logout; empty state icon folder + "Chưa có dự án nào" + "Nhấn nút "+" bên dưới để tạo dự án đầu tiên của bạn!"; card dự án (icon tròn xanh nhạt, title đậm, description, nút xoá đỏ có dialog xác nhận); FAB "+ Dự án mới" → dialog nhập tên/mô tả
-- [ ] **BoardScreen**: AppBar tên project + chấm xanh "Realtime Active" (đỏ "Mất kết nối" khi stream lỗi); 3 cột cuộn ngang, mỗi cột ~85% bề rộng màn hình: header nền nhạt + chấm màu (To Do xanh dương, In Progress cam, Done xanh lá) + badge đếm số task
-- [ ] **TaskCard**: title đậm, description xám, ảnh (bo góc, `Image.network` có loading/error builder, tap mở full-screen), nút "x" xoá (dialog xác nhận); hàng action: TODO → "→ Bắt đầu"; IN_PROGRESS → "←" và "✓ Hoàn thành"; DONE → "←"
-- [ ] Cuối mỗi cột "+ Thêm công việc" (mở form với status = cột đó); FAB "Thêm Task"
-- [ ] **AddTaskDialog**: "Thêm công việc mới" + nút X; Tiêu đề công việc * / Mô tả chi tiết (multiline) / Trạng thái (dropdown 3 giá trị); nút outline "📎 Đính kèm ảnh" + tên file; preview ảnh; nút "Tạo công việc" (loading, disable khi đang gửi). Ảnh: `image_picker` `imageQuality: 80, maxWidth: 1600` → `PickedImage`
-- [ ] Mọi `AppException` → SnackBar; mọi nút gửi có trạng thái loading
-- [ ] (Bonus) kéo thả card giữa cột bằng `LongPressDraggable` + `DragTarget` → `updateStatus`
-- [ ] Widget test cho Login validate + Board render 3 cột với fake repo
+> **Giao diện tự thiết kế ("Indigo Focus") — KHÔNG được giống bản demo của thầy.** Cấm: icon lưới 2x2, màu xanh lá/mint, nút stadium, AppBar "Dự án của tôi", danh sách dự án dạng list có nút xoá đỏ, 3 cột cuộn ngang 85% màn hình, nút "→ Bắt đầu"/"✓ Hoàn thành", chữ "Realtime Active", AddTaskDialog dạng dialog. Chỉ dùng màu/kiểu từ `lib/app/theme.dart` (đẹp ở cả light lẫn dark mode).
+
+- [ ] **Auth (Login + Register dùng chung 1 widget khung)**: nửa trên là hero gradient `AppColors.heroGradient` cao ~38% màn hình, chứa logo tự vẽ (3 thanh dọc cao thấp khác nhau như 3 cột kanban, màu trắng, bo góc) + chữ "Mini Trello" + slogan "Sắp xếp công việc, gọn như kéo thẻ."; nửa dưới là sheet bo góc trên 28 đè lên hero, chứa form.
+  - **LoginScreen**: tiêu đề "Chào mừng trở lại", Email (prefix `alternate_email`), Mật khẩu (prefix `key_rounded`, suffix ẩn/hiện), nút "Đăng nhập", dòng dưới "Lần đầu dùng Mini Trello?" + TextButton "Tạo tài khoản".
+  - **RegisterScreen**: tiêu đề "Bắt đầu miễn phí", Họ và tên, Email, Mật khẩu (có thanh độ mạnh mật khẩu 3 nấc dưới field), nút "Tạo tài khoản", dòng dưới "Đã có tài khoản?" + "Đăng nhập". Validate email hợp lệ, mật khẩu ≥ 6, họ tên không trống.
+- [ ] **ProjectsScreen** (không AppBar truyền thống):
+  - Header trong `SafeArea`: dòng nhỏ ngày hôm nay ("Thứ Hai, 19/10"), dòng lớn "Xin chào, {tên} 👋" (tên = `full_name`, rỗng thì lấy phần trước @ của email); bên phải avatar tròn chữ cái đầu → bấm mở bottom sheet tài khoản (họ tên, email, nút "Đăng xuất").
+  - Dòng thống kê: "{n} dự án".
+  - **Lưới 2 cột**: ô đầu tiên là thẻ "Dự án mới" viền đứt (dashed, tự vẽ bằng CustomPainter) có icon `add_rounded` → mở bottom sheet tạo dự án (Tên dự án *, Mô tả, nút "Tạo dự án"). Các ô sau là thẻ dự án nền gradient từ `AppColors.projectPalette[project.id.hashCode.abs() % length]`, chữ trắng: tiêu đề đậm (2 dòng), mô tả (2 dòng, mờ), góc dưới "Tạo {dd/MM}". Bấm → board. **Nhấn giữ** → bottom sheet hành động có "Xoá dự án" (màu error) → xác nhận bằng bottom sheet thứ 2 ("Xoá "{tên}"? Mọi công việc và ảnh đính kèm sẽ bị xoá vĩnh viễn.").
+  - Empty state (chỉ có ô "Dự án mới"): minh hoạ bằng icon `dashboard_customize_rounded` lớn + "Bắt đầu với dự án đầu tiên" + "Mỗi dự án là một bảng công việc riêng.".
+- [ ] **BoardScreen**:
+  - AppBar: nút back, tiêu đề tên dự án, phụ đề mô tả (1 dòng); bên phải **pill trạng thái kết nối**: "● Trực tiếp" (teal, chấm nhấp nháy nhẹ) khi stream ổn, "● Mất kết nối" (error) khi stream lỗi.
+  - Dưới AppBar: thẻ tiến độ "{done}/{total} việc đã xong" + `LinearProgressIndicator` bo tròn màu teal.
+  - **3 tab** (`TabBar` dạng pill/segmented, mỗi tab: icon `statusIcon` + tên ngắn "Cần làm" / "Đang làm" / "Xong" + badge đếm màu `statusColor`), `TabBarView` vuốt ngang được; mỗi tab là danh sách dọc.
+  - Empty state mỗi tab: "Chưa có việc nào ở đây".
+  - FAB vuông bo 14 icon `add_task_rounded` → mở AddTaskSheet với status = tab đang chọn.
+- [ ] **TaskCard**: Card có **sọc màu trạng thái bên trái** (4px), tiêu đề đậm, mô tả 2 dòng; nếu có ảnh: thumbnail vuông 64 bo 12 bên phải (`Image.network` có loading/error builder). **Vuốt sang phải** → chuyển sang trạng thái kế tiếp, **vuốt sang trái** → trạng thái trước (Dismissible `confirmDismiss` gọi `updateStatus` rồi trả `false`; nền vuốt hiện màu + tên trạng thái đích; không vuốt được nếu không có trạng thái đó). **Bấm thẻ** → TaskDetailSheet.
+- [ ] **TaskDetailSheet** (bottom sheet): ảnh lớn (bấm → xem full-screen có `InteractiveViewer` + `Hero`), tiêu đề, mô tả, ngày tạo; chọn trạng thái bằng `SegmentedButton` 3 giá trị (đổi là gọi `updateStatus`); nút text "Xoá công việc" màu error → xác nhận → `deleteTask`.
+- [ ] **AddTaskSheet** (bottom sheet cao, `isScrollControlled`, đẩy lên theo bàn phím): tiêu đề "Công việc mới"; Tiêu đề * / Mô tả (multiline); trạng thái bằng `SegmentedButton` (không dropdown); ô chọn ảnh viền đứt "Chạm để thêm ảnh" (sau khi chọn: preview bo 16 + nút xoá ảnh nhỏ ở góc); nút "Lưu công việc" (loading, disable khi đang gửi). Ảnh: `image_picker` `imageQuality: 80, maxWidth: 1600` → `PickedImage` (mime suy từ đuôi file: jpg/jpeg→image/jpeg, png, webp, heic).
+- [ ] Mọi `AppException` → SnackBar floating; mọi nút gửi có trạng thái loading
+- [ ] (Bonus) kéo thả: `LongPressDraggable` thẻ thả lên **tab** khác (tab là `DragTarget`, sáng lên khi kéo qua) → `updateStatus`
+- [ ] Widget test cho Login validate + Board render 3 tab với fake repo
 
 ### Phase 2 — Claude Code (tích hợp)
 - [ ] Merge `feat/backend` → `main`, rồi `feat/ui` → `main`; `flutter analyze` + `flutter test` sạch
@@ -210,6 +222,7 @@ rollback;
 ---
 
 ## 5. Khác biệt so với bản demo của thầy (để mày giải thích khi vấn đáp)
+- **Giao diện tự thiết kế** ("Indigo Focus"): có dark mode, hero gradient ở màn auth, lưới dự án gradient, board dạng tab có thanh tiến độ, vuốt thẻ để đổi trạng thái, thêm/xem task bằng bottom sheet thay vì dialog.
 - Bucket public nhưng **không** có policy SELECT rộng → hết cái cảnh báo màu cam "Clients can list all files in this bucket" trong ảnh demo.
 - `status` có `CHECK` chỉ nhận `TODO / IN_PROGRESS / DONE`, title có check độ dài.
 - Index cho mọi cột khoá ngoại; policy bọc `(select auth.uid())` để không bị gọi lại từng dòng.
