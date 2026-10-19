@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_exception.dart';
@@ -24,14 +26,18 @@ AppException toAppException(Object error) {
 Future<T> guard<T>(Future<T> Function() action) async {
   try {
     return await action();
-  } catch (e) {
+  } catch (e, st) {
+    if (kDebugMode) debugPrint('[supabase] $e\n$st');
     throw toAppException(e);
   }
 }
 
 /// Lỗi trong stream realtime cũng thành [AppException] để UI hiện "Mất kết nối".
 Stream<T> guardStream<T>(Stream<T> stream) =>
-    stream.handleError((Object e, StackTrace st) => throw toAppException(e));
+    stream.handleError((Object e, StackTrace st) {
+      if (kDebugMode) debugPrint('[supabase stream] $e');
+      throw toAppException(e);
+    });
 
 bool _isNetworkError(Object e) =>
     e is SocketException ||
