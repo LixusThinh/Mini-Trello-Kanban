@@ -17,6 +17,7 @@ class ProjectsScreen extends StatefulWidget {
 
 class _ProjectsScreenState extends State<ProjectsScreen> {
   late final _projects = projectRepo.watchMyProjects();
+  Object? _lastStreamError;
   String _name = '';
   @override
   void initState() {
@@ -82,6 +83,15 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         child: StreamBuilder<List<Project>>(
           stream: _projects,
           builder: (context, snapshot) {
+            if (snapshot.hasError &&
+                !identical(_lastStreamError, snapshot.error)) {
+              _lastStreamError = snapshot.error;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) showAppError(context, snapshot.error!);
+              });
+            } else if (!snapshot.hasError) {
+              _lastStreamError = null;
+            }
             final projects = snapshot.data ?? [];
             return CustomScrollView(
               slivers: [

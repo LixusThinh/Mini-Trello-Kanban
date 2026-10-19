@@ -21,6 +21,7 @@ class _BoardScreenState extends State<BoardScreen>
     with SingleTickerProviderStateMixin {
   late final _tabs = TabController(length: 3, vsync: this);
   late final _tasks = taskRepo.watchTasks(widget.project.id);
+  Object? _lastStreamError;
   @override
   void dispose() {
     _tabs.dispose();
@@ -31,6 +32,14 @@ class _BoardScreenState extends State<BoardScreen>
   Widget build(BuildContext context) => StreamBuilder<List<Task>>(
     stream: _tasks,
     builder: (context, snapshot) {
+      if (snapshot.hasError && !identical(_lastStreamError, snapshot.error)) {
+        _lastStreamError = snapshot.error;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) showAppError(context, snapshot.error!);
+        });
+      } else if (!snapshot.hasError) {
+        _lastStreamError = null;
+      }
       final tasks = snapshot.data ?? [];
       final done = tasks.where((t) => t.status == TaskStatus.done).length;
       return Scaffold(
