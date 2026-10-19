@@ -7,6 +7,7 @@ import '../../models/task.dart';
 import '../../widgets/connection_pill.dart';
 import '../../widgets/ui_helpers.dart';
 import 'add_task_sheet.dart';
+import 'task_card.dart';
 
 class BoardScreen extends StatefulWidget {
   const BoardScreen({super.key, required this.project});
@@ -190,10 +191,16 @@ class _BoardScreenState extends State<BoardScreen>
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
       itemCount: tasks.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, index) => Card(
-        child: ListTile(
-          title: Text(tasks[index].title),
-          subtitle: Text(tasks[index].description ?? ''),
+      itemBuilder: (context, index) => TaskCard(
+        task: tasks[index],
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          builder: (_) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(tasks[index].title),
+            ),
+          ),
         ),
       ),
     );
