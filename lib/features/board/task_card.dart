@@ -6,9 +6,15 @@ import '../../models/task.dart';
 import '../../widgets/ui_helpers.dart';
 
 class TaskCard extends StatefulWidget {
-  const TaskCard({super.key, required this.task, required this.onTap});
+  const TaskCard({
+    super.key,
+    required this.task,
+    required this.onTap,
+    this.draggable = false,
+  });
   final Task task;
   final VoidCallback onTap;
+  final bool draggable;
   @override
   State<TaskCard> createState() => _TaskCardState();
 }
@@ -54,7 +60,7 @@ class _TaskCardState extends State<TaskCard> {
             TaskStatus.inProgress => DismissDirection.horizontal,
             TaskStatus.done => DismissDirection.endToStart,
           };
-    return Dismissible(
+    final card = Dismissible(
       key: ValueKey('swipe-${task.id}'),
       direction: direction,
       confirmDismiss: _move,
@@ -120,6 +126,19 @@ class _TaskCardState extends State<TaskCard> {
           ),
         ),
       ),
+    );
+    if (!widget.draggable) return card;
+    return LongPressDraggable<Task>(
+      data: task,
+      feedback: Material(
+        color: Colors.transparent,
+        child: SizedBox(
+          width: MediaQuery.sizeOf(context).width - 32,
+          child: Opacity(opacity: .9, child: card),
+        ),
+      ),
+      childWhenDragging: Opacity(opacity: .35, child: card),
+      child: card,
     );
   }
 }

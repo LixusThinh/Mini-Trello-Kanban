@@ -8,6 +8,7 @@ import '../../widgets/connection_pill.dart';
 import '../../widgets/ui_helpers.dart';
 import 'add_task_sheet.dart';
 import 'task_card.dart';
+import 'task_detail_sheet.dart';
 
 class BoardScreen extends StatefulWidget {
   const BoardScreen({super.key, required this.project});
@@ -113,44 +114,68 @@ class _BoardScreenState extends State<BoardScreen>
                   for (final status in TaskStatus.values)
                     Tab(
                       height: 56,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
+                      child: DragTarget<Task>(
+                        onWillAcceptWithDetails: (details) =>
+                            details.data.status != status,
+                        onAcceptWithDetails: (details) async {
+                          try {
+                            await taskRepo.updateStatus(
+                              details.data.id,
+                              status,
+                            );
+                          } catch (e) {
+                            if (context.mounted) showAppError(context, e);
+                          }
+                        },
+                        builder: (context, candidates, _) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 140),
+                          decoration: candidates.isEmpty
+                              ? null
+                              : BoxDecoration(
+                                  color: statusColor(status)
+                                      .withValues(alpha: .12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                statusIcon(status),
-                                size: 17,
-                                color: statusColor(status),
-                              ),
-                              const SizedBox(width: 5),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: statusColor(status)
-                                      .withValues(alpha: .15),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  '${tasks.where((t) => t.status == status).length}',
-                                  style: TextStyle(
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    statusIcon(status),
+                                    size: 17,
                                     color: statusColor(status),
-                                    fontSize: 11,
                                   ),
-                                ),
+                                  const SizedBox(width: 5),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: statusColor(status)
+                                          .withValues(alpha: .15),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      '${tasks.where((t) => t.status == status).length}',
+                                      style: TextStyle(
+                                        color: statusColor(status),
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                shortStatus(status),
+                                style: const TextStyle(fontSize: 12),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            shortStatus(status),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                 ],
@@ -195,13 +220,10 @@ class _BoardScreenState extends State<BoardScreen>
         task: tasks[index],
         onTap: () => showModalBottomSheet<void>(
           context: context,
-          builder: (_) => SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(tasks[index].title),
-            ),
-          ),
+          isScrollControlled: true,
+          builder: (_) => TaskDetailSheet(task: tasks[index]),
         ),
+        draggable: true,
       ),
     );
   }
