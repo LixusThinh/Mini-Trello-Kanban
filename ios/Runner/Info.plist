@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Mini Trello cần truy cập thư viện ảnh để đính kèm ảnh vào công việc.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Mini Trello cần dùng camera để chụp ảnh đính kèm vào công việc.</string>
 </dict>
 </plist>
